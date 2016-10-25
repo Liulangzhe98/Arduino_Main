@@ -565,6 +565,7 @@ void IVSequence()
       // Open the Shutter
       digitalWrite(ShutterTrigger, HIGH);
 //      digitalWrite(GreenLamp, HIGH);
+      valveChooser();
 
       if(ValueArray[21] > 0)
       {
@@ -584,6 +585,8 @@ void IVSequence()
       // Open the Shutter
       digitalWrite(ShutterTrigger, HIGH);
 //      digitalWrite(GreenLamp, HIGH);
+
+      valveChooser();
 
       if(ValueArray[21] > 0)
       {
@@ -620,6 +623,9 @@ void LightningSequence()
     
   // Release the Shutter
   digitalWrite(ShutterTrigger, HIGH);
+
+  valveChooser();
+  
   digitalWrite(ShutterTrigger, LOW);
   delay(50);
   delay(2000);
