@@ -63,8 +63,9 @@ int LightningSwitch = A14;
 int LightningValue = 0;
 int LightningDetect = A11;
 int LightningDetectValue = 0;
+int ValveFlushSwitch = A11;
+int ValveFlushSwitchValue = 0;
 
-//TODO: Moet ik nog aanpassen, omdat we een schakelaar te dicht bij de display hebben zitten en deze de oneven rij van digitale pins afdekt.
 int ShutterTrigger = 23;
 int FlashTrigger = 25;
 
@@ -72,24 +73,6 @@ int ValveATrigger = 38;
 int ValveBTrigger = 40;
 int ValveCTrigger = 41;
 int ValveDTrigger = 44;
-
-/*
- * Wij bedienen geen externe lampen dus is dit niet nodig.
- * 
-  int LampASwitch = 27;
-  int LampBSwitch = 37;
-*/
-
-/*
- * Wij hebben geen lampjes in het bedieningspaneel dus hebben we dit stuk niet nodig.
- * 
-  int GreenLamp = 29;
-  int YellowLamp = 31;
-  int BlueLamp = 33;
-  int RedLamp = 35;
-*/
-
-
 
 // Set Global Variables
 int RunOnce = 0;
@@ -175,29 +158,7 @@ byte raree[8] = {
 
 void setup()
 {
-  /*
-   * Wij hebben geen lampjes in het bedieningspaneel dus hebben we dit stuk niet nodig.
-   * 
-  
-  // Set Pin Modes for Indicator Lights and turn them on
-  pinMode(RedLamp, OUTPUT);
-  digitalWrite(RedLamp, HIGH);
-  pinMode(BlueLamp, OUTPUT);
-  digitalWrite(BlueLamp, HIGH);
-  pinMode(YellowLamp, OUTPUT);
-  digitalWrite(YellowLamp, HIGH);
-  pinMode(GreenLamp, OUTPUT);
-  digitalWrite(GreenLamp, HIGH);
-  delay(1000);*/
-
-  // Send Intro message to Display
-  /* 
-   *  Intro van Micheal Ross
-   *  PlayIntro();
-  */  
-
   PlayIntroCenT();
-
 
   // Set the rest of the Pin Modes for the Arduino
   pinMode(IRDetect, INPUT); 
@@ -205,14 +166,6 @@ void setup()
   digitalWrite(FlashTrigger, LOW);
   pinMode(ShutterTrigger, OUTPUT);
   digitalWrite(ShutterTrigger, LOW);
-/*
- * Wij bedienen geen externe lampen dus is dit niet nodig.
- * 
-  pinMode(LampASwitch, OUTPUT);
-  pinMode(LampBSwitch, OUTPUT);
-  digitalWrite(LampASwitch, HIGH);
-  digitalWrite(LampBSwitch, HIGH);
-*/
   
   pinMode(ValveATrigger, OUTPUT);
   pinMode(ValveBTrigger, OUTPUT);
@@ -222,11 +175,6 @@ void setup()
   digitalWrite(ValveBTrigger, LOW);
   digitalWrite(ValveCTrigger, LOW);
   digitalWrite(ValveDTrigger, LOW);
-
-/*
- * Wij hebben geen lampjes in het bedieningspaneel dus hebben we dit stuk niet nodig.
-  IndicatorLightTest();
-*/
 
 /* .createChar zorgt ervoor dat je later je jezelf gemaakte characters kunt hergebruiken.
  * https://www.sparkfun.com/datasheets/LCD/HD44780.pdf pagina 17 is de tabel voor het lcd'tje wat wij gebruiken
@@ -241,7 +189,6 @@ void setup()
   
   delay(5000);
   
-  
   // Read the Paramters from saved memory and update the default
   // Array values with those retrieved from memory
   EXROM.read(0, array2, sizeof(array2));
@@ -252,8 +199,6 @@ void setup()
       ValueArray[i] = array2[i];
     }  
   }
-
-  //Serial.begin(9600);
 }
 
 
@@ -270,15 +215,11 @@ void loop()
       {
         // We are in Lightning Mode
         lcd.print("Lightning Mode");
-//        digitalWrite(RedLamp, HIGH);
-//        digitalWrite(BlueLamp, HIGH);
       }
       if(IVValue > 500)
       {
         // We are in Intervalometer Mode
         lcd.print("Intervalometer");
-//        digitalWrite(RedLamp, HIGH);
-//        digitalWrite(BlueLamp, HIGH);
       }
     }
     else
@@ -287,8 +228,6 @@ void loop()
       { 
         // We are in Infrared Detector Mode
         lcd.print("Infrared Mode...");
-//        digitalWrite(RedLamp, HIGH);
-//        digitalWrite(BlueLamp, LOW);
         ValueArray[0] = array2[0];
         ValueArray[3] = array2[3];
       }
@@ -296,8 +235,6 @@ void loop()
       {
         // We are in Sound Detection Mode
         lcd.print("Sound Mode...");
-//        digitalWrite(RedLamp, LOW);
-//        digitalWrite(BlueLamp, HIGH);
         ValueArray[0] = 0;
         ValueArray[3] = 0;
       }
@@ -305,22 +242,17 @@ void loop()
     lcd.setCursor(0,1);
     lcd.print("READY TO FIRE!");
     // Turn the Green Lamp "Ready" indicator on
-//    digitalWrite(YellowLamp, LOW);
-//    digitalWrite(GreenLamp, HIGH);
     delay(50);
   }
 }
 
-//TODO: Volgens mij klopt dit niet. Dus nog even testen.
 void FireOneValve()
 {
-  for(int i=0; i < ValueArray[7]; i++)
+  for(int i=0; i < ValueArray[7]; i++) // ValueArray[7] == # of drops
   {
     digitalWrite(ValveATrigger, HIGH);
-    digitalWrite(ValveBTrigger, HIGH);
     delay(ValueArray[2]);
     digitalWrite(ValveATrigger, LOW);
-    digitalWrite(ValveBTrigger, LOW);
     if(i < (ValueArray[7] - 1))
     {
       delay(ValueArray[1]);
@@ -330,7 +262,7 @@ void FireOneValve()
 
 void FireTwoValves()
 {
-  for(int i=0; i < ValueArray[7]; i++)
+  for(int i=0; i < ValueArray[7]; i++) // ValueArray[7] == # of drops
   {
     digitalWrite(ValveATrigger, HIGH);
     digitalWrite(ValveBTrigger, HIGH);
@@ -346,7 +278,7 @@ void FireTwoValves()
 
 void FireThreeValves()
 {
-  for(int i=0; i < ValueArray[7]; i++)
+  for(int i=0; i < ValueArray[7]; i++) // ValueArray[7] == # of drops
   {
     digitalWrite(ValveATrigger, HIGH);
     digitalWrite(ValveBTrigger, HIGH);
@@ -364,7 +296,7 @@ void FireThreeValves()
 
 void FireFourValves()
 {
-  for(int i=0; i < ValueArray[7]; i++)
+  for(int i=0; i < ValueArray[7]; i++) // ValueArray[7] == # of drops
   {
     digitalWrite(ValveATrigger, HIGH);
     digitalWrite(ValveBTrigger, HIGH);
@@ -387,8 +319,6 @@ void FireFourValves()
 void IRSequence()
 {
   // Turn the Green Lamp off and Yellow Lamp on to show that the process is running
-//  digitalWrite(YellowLamp, HIGH);
-//  digitalWrite(GreenLamp, LOW);
   lcd.clear();
   lcd.print("Running...");
   lcd.setCursor(0,1);
@@ -401,11 +331,6 @@ void IRSequence()
     digitalWrite(FlashTrigger, HIGH);
     digitalWrite(FlashTrigger, LOW);
   }
-/*
-  // Turn off the Lamps
-  digitalWrite(LampASwitch, LOW);
-  digitalWrite(LampBSwitch, LOW);
-*/
   delay(ValueArray[3] * 1000);
 
 
@@ -454,20 +379,11 @@ void IRSequence()
   // Close the Shutter
   digitalWrite(ShutterTrigger, LOW);
   delay(500);
-
-  /*
-    // Turn the Lamps back on 
-    digitalWrite(LampASwitch, HIGH);
-    digitalWrite(LampBSwitch, HIGH);
-  */
 }
 
 
 void PeizoSequence()
 {
-//  digitalWrite(BlueLamp, HIGH);
-//  digitalWrite(YellowLamp, LOW);
-//  digitalWrite(GreenLamp, LOW);
   PeizoValue = 1;
   
   lcd.clear();
@@ -482,10 +398,6 @@ void PeizoSequence()
     digitalWrite(FlashTrigger, HIGH);
     digitalWrite(FlashTrigger, LOW);
   }
-
-//  // Turn off the Lights
-//  digitalWrite(LampASwitch, LOW);
-//  digitalWrite(LampBSwitch, LOW);
   delay(ValueArray[3] * 1000);
     
   // Open the Shutter
@@ -533,21 +445,12 @@ void PeizoSequence()
     // Close the Shutter
     digitalWrite(ShutterTrigger, LOW);
     delay(500);
-
-//    // Turn the Lamps back on 
-//    digitalWrite(LampASwitch, HIGH);
-//    digitalWrite(LampBSwitch, HIGH);
   }
   delay(2000);
 }
 
 void IVSequence()
-{
-//  digitalWrite(RedLamp, HIGH);
-//  digitalWrite(BlueLamp, HIGH);
-//  digitalWrite(YellowLamp, LOW);
-//  digitalWrite(GreenLamp, LOW);
-  
+{  
   lcd.clear();
   lcd.print("Intervalometer");
   lcd.setCursor(0,1);
@@ -564,7 +467,6 @@ void IVSequence()
     {
       // Open the Shutter
       digitalWrite(ShutterTrigger, HIGH);
-//      digitalWrite(GreenLamp, HIGH);
       valveChooser();
 
       if(ValueArray[21] > 0)
@@ -572,7 +474,6 @@ void IVSequence()
         delay(ValueArray[21] * 1000);
       }
       digitalWrite(ShutterTrigger, LOW);
-//      digitalWrite(GreenLamp, LOW);
       delay((ValueArray[22] * 1000) + (ValueArray[23]));
       LaunchButtonValue = analogRead(LaunchButton); 
     }
@@ -584,16 +485,12 @@ void IVSequence()
     {
       // Open the Shutter
       digitalWrite(ShutterTrigger, HIGH);
-//      digitalWrite(GreenLamp, HIGH);
-
       valveChooser();
-
       if(ValueArray[21] > 0)
       {
         delay(ValueArray[21] * 1000);
       }
       digitalWrite(ShutterTrigger, LOW);
-//      digitalWrite(GreenLamp, LOW);
       delay((ValueArray[22] * 1000) + (ValueArray[23]));
     }
   }
@@ -601,10 +498,6 @@ void IVSequence()
 
 void LightningSequence()
 {
-//  digitalWrite(RedLamp, HIGH);
-//  digitalWrite(BlueLamp, HIGH);
-//  digitalWrite(YellowLamp, HIGH);
-//  digitalWrite(GreenLamp, LOW);
   LightningDetectValue = 1;
   
   lcd.clear();
@@ -680,6 +573,13 @@ void ReadSwitches()
     memValue = 0;
   }
 
+  ValveFlushSwitchValue = analogRead(ValveFlushSwitch);
+  if(ValveFlushSwitchValue > 500)
+  {
+    valveFlush();
+  }
+
+
   //Next we read the Lightning Switch to see if we need to be in Lightning Mode
   LightningValue = analogRead(LightningSwitch);
 
@@ -713,8 +613,6 @@ void ReadSwitches()
     delay(3000);
 
     UpdateMode();
-//    digitalWrite(BlueLamp, LOW);
-
   }
 }
 
@@ -739,10 +637,6 @@ void UpdateDisplay()
 
 void UpdateMode() 
 {
-//  digitalWrite(RedLamp, LOW);
-//  digitalWrite(BlueLamp, LOW);
-//  digitalWrite(GreenLamp, LOW);
-//  digitalWrite(YellowLamp, HIGH);
   int x = 0;
   // Invoke a while loop and stay in it until the Update/Fire switch has been moved to Fire
   while(UpdateValue < 500)
@@ -778,11 +672,7 @@ void UpdateMode()
     EnterValue = analogRead(EnterButton);
     if(EnterValue > 500)
     {
-//      digitalWrite(RedLamp, HIGH);
-//      digitalWrite(BlueLamp, HIGH);
-//      digitalWrite(YellowLamp, HIGH);
-//      digitalWrite(GreenLamp, LOW);
-//  
+  
       lcd.clear();
       lcd.print("Saving Values");
       lcd.setCursor(0,1);
@@ -1083,229 +973,15 @@ void valveChooser()
   }
 }
 
-
-/*
-void IndicatorLightTest()
+void valveFlush()
 {
-  digitalWrite(RedLamp, LOW);
-  digitalWrite(BlueLamp, LOW);
-  digitalWrite(YellowLamp, LOW);
-  digitalWrite(GreenLamp, LOW);
-  digitalWrite(RedLamp, HIGH);
-  delay(50);
-  digitalWrite(BlueLamp, HIGH);
-  delay(20);
-  digitalWrite(YellowLamp, LOW);
-  delay(60);
-  digitalWrite(GreenLamp, LOW);
-  delay(30);
-  digitalWrite(RedLamp, LOW);
-  delay(10);
-  digitalWrite(BlueLamp, LOW);
-  delay(10);
-  digitalWrite(YellowLamp, HIGH);
-  delay(40);
-  digitalWrite(GreenLamp, HIGH);
-  delay(10);
-  digitalWrite(RedLamp, LOW);
-  delay(60);
-  digitalWrite(BlueLamp, HIGH);
-  delay(20);
-  digitalWrite(YellowLamp, LOW);
-  delay(10);
-  digitalWrite(GreenLamp, HIGH);
-  digitalWrite(RedLamp, HIGH);
-  delay(40);
-  digitalWrite(BlueLamp, LOW);
-  digitalWrite(YellowLamp, HIGH);
-  delay(50);
-  digitalWrite(GreenLamp, LOW);
-  delay(50);
-  digitalWrite(RedLamp, HIGH);
-  delay(50);
-  digitalWrite(BlueLamp, HIGH);
-  delay(10);
-  digitalWrite(YellowLamp, LOW);
-  delay(20);
-  digitalWrite(GreenLamp, LOW);
-  delay(10);
-  digitalWrite(RedLamp, LOW);
-  delay(50);
-  digitalWrite(BlueLamp, LOW);
-  delay(50);
-  digitalWrite(YellowLamp, HIGH);
-  delay(50);
-  digitalWrite(GreenLamp, HIGH);
-  delay(10);
-  digitalWrite(RedLamp, LOW);
-  delay(15);
-  digitalWrite(BlueLamp, HIGH);
-  delay(10);
-  digitalWrite(YellowLamp, LOW);
-  delay(50);
-  digitalWrite(GreenLamp, HIGH);
-  digitalWrite(RedLamp, HIGH);
-  delay(50);
-  digitalWrite(BlueLamp, LOW);
-  digitalWrite(YellowLamp, HIGH);
-  delay(50);
-  digitalWrite(GreenLamp, LOW);
-  delay(30);
-  digitalWrite(RedLamp, HIGH);
-  digitalWrite(BlueLamp, LOW);
-  digitalWrite(YellowLamp, LOW);
-  digitalWrite(GreenLamp, LOW);
-  delay(20);
-  digitalWrite(RedLamp, LOW);
-  digitalWrite(BlueLamp, HIGH);
-  digitalWrite(YellowLamp, LOW);
-  digitalWrite(GreenLamp, LOW);
-  delay(50);
-  digitalWrite(RedLamp, LOW);
-  digitalWrite(BlueLamp, LOW);
-  digitalWrite(YellowLamp, HIGH);
-  digitalWrite(GreenLamp, LOW);
-  delay(40);
-  digitalWrite(RedLamp, LOW);
-  digitalWrite(BlueLamp, LOW);
-  digitalWrite(YellowLamp, LOW);
-  digitalWrite(GreenLamp, HIGH);
-  delay(60);
-  digitalWrite(RedLamp, LOW);
-  digitalWrite(BlueLamp, LOW);
-  digitalWrite(YellowLamp, HIGH);
-  digitalWrite(GreenLamp, LOW);
-  delay(20); 
-  digitalWrite(RedLamp, LOW);
-  digitalWrite(BlueLamp, HIGH);
-  digitalWrite(YellowLamp, LOW);
-  digitalWrite(GreenLamp, LOW);
-  delay(40);
-  digitalWrite(RedLamp, HIGH);
-  digitalWrite(BlueLamp, LOW);
-  digitalWrite(YellowLamp, LOW);
-  digitalWrite(GreenLamp, LOW);
-  delay(60);  
-  digitalWrite(RedLamp, LOW);
-  digitalWrite(BlueLamp, HIGH);
-  digitalWrite(YellowLamp, LOW);
-  digitalWrite(GreenLamp, LOW);
-  delay(30);
-  digitalWrite(RedLamp, LOW);
-  digitalWrite(BlueLamp, LOW);
-  digitalWrite(YellowLamp, HIGH);
-  digitalWrite(GreenLamp, LOW);
-  delay(50);
-  digitalWrite(RedLamp, LOW);
-  digitalWrite(BlueLamp, LOW);
-  digitalWrite(YellowLamp, LOW);
-  digitalWrite(GreenLamp, HIGH);
-  delay(10);
-  digitalWrite(RedLamp, LOW);
-  digitalWrite(BlueLamp, LOW);
-  digitalWrite(YellowLamp, HIGH);
-  digitalWrite(GreenLamp, LOW);
-  delay(30); 
-  digitalWrite(RedLamp, LOW);
-  digitalWrite(BlueLamp, HIGH);
-  digitalWrite(YellowLamp, LOW);
-  digitalWrite(GreenLamp, LOW);
-  delay(60);
-  digitalWrite(RedLamp, HIGH);
-  digitalWrite(BlueLamp, LOW);
-  digitalWrite(YellowLamp, LOW);
-  digitalWrite(GreenLamp, LOW);
-  delay(50);  
-  digitalWrite(RedLamp, LOW);
-  digitalWrite(BlueLamp, HIGH);
-  digitalWrite(YellowLamp, LOW);
-  digitalWrite(GreenLamp, LOW);
-  delay(10);
-  digitalWrite(RedLamp, LOW);
-  digitalWrite(BlueLamp, LOW);
-  digitalWrite(YellowLamp, HIGH);
-  digitalWrite(GreenLamp, LOW);
-  delay(50);
-  digitalWrite(RedLamp, LOW);
-  digitalWrite(BlueLamp, LOW);
-  digitalWrite(YellowLamp, LOW);
-  digitalWrite(GreenLamp, HIGH);
-  delay(30);
-  digitalWrite(RedLamp, LOW);
-  digitalWrite(BlueLamp, LOW);
-  digitalWrite(YellowLamp, HIGH);
-  digitalWrite(GreenLamp, LOW);
-  delay(20); 
-  digitalWrite(RedLamp, LOW);
-  digitalWrite(BlueLamp, HIGH);
-  digitalWrite(YellowLamp, LOW);
-  digitalWrite(GreenLamp, LOW);
-  delay(60);
-  digitalWrite(RedLamp, HIGH);
-  digitalWrite(BlueLamp, LOW);
-  digitalWrite(YellowLamp, LOW);
-  digitalWrite(GreenLamp, LOW);
-  delay(40);  
-  digitalWrite(RedLamp, LOW);
-  digitalWrite(BlueLamp, HIGH);
-  digitalWrite(YellowLamp, LOW);
-  digitalWrite(GreenLamp, LOW);
-  delay(10);
-  digitalWrite(RedLamp, LOW);
-  digitalWrite(BlueLamp, LOW);
-  digitalWrite(YellowLamp, HIGH);
-  digitalWrite(GreenLamp, LOW);
-  delay(20);
-  digitalWrite(RedLamp, LOW);
-  digitalWrite(BlueLamp, LOW);
-  digitalWrite(YellowLamp, LOW);
-  digitalWrite(GreenLamp, HIGH);
-  delay(40);
-  digitalWrite(RedLamp, LOW);
-  digitalWrite(BlueLamp, LOW);
-  digitalWrite(YellowLamp, HIGH);
-  digitalWrite(GreenLamp, LOW);
-  delay(30); 
-  digitalWrite(RedLamp, LOW);
-  digitalWrite(BlueLamp, HIGH);
-  digitalWrite(YellowLamp, LOW);
-  digitalWrite(GreenLamp, LOW);
-  delay(60);
-  digitalWrite(RedLamp, HIGH);
-  digitalWrite(BlueLamp, LOW);
-  digitalWrite(YellowLamp, LOW);
-  digitalWrite(GreenLamp, LOW);
-  delay(40);  
-  digitalWrite(RedLamp, LOW);
-  digitalWrite(BlueLamp, HIGH);
-  digitalWrite(YellowLamp, LOW);
-  digitalWrite(GreenLamp, LOW);
-  delay(30);
-  digitalWrite(RedLamp, LOW);
-  digitalWrite(BlueLamp, LOW);
-  digitalWrite(YellowLamp, HIGH);
-  digitalWrite(GreenLamp, LOW);
-  delay(50);
-  digitalWrite(RedLamp, LOW);
-  digitalWrite(BlueLamp, LOW);
-  digitalWrite(YellowLamp, LOW);
-  digitalWrite(GreenLamp, HIGH);
-  delay(20);
-  digitalWrite(RedLamp, LOW);
-  digitalWrite(BlueLamp, LOW);
-  digitalWrite(YellowLamp, HIGH);
-  digitalWrite(GreenLamp, LOW);
-  delay(10); 
-  digitalWrite(RedLamp, LOW);
-  digitalWrite(BlueLamp, HIGH);
-  digitalWrite(YellowLamp, LOW);
-  digitalWrite(GreenLamp, LOW);
-  delay(60);
-  digitalWrite(RedLamp, HIGH);
-  digitalWrite(BlueLamp, LOW);
-  digitalWrite(YellowLamp, LOW);
-  digitalWrite(GreenLamp, LOW);
-  delay(40);  
+    digitalWrite(ValveATrigger, HIGH);
+    digitalWrite(ValveBTrigger, HIGH);
+    digitalWrite(ValveCTrigger, HIGH);
+    digitalWrite(ValveDTrigger, HIGH);
+    delay(500);
+    digitalWrite(ValveATrigger, LOW);
+    digitalWrite(ValveBTrigger, LOW);
+    digitalWrite(ValveCTrigger, LOW);
+    digitalWrite(ValveDTrigger, LOW);
 }
-*/
-
